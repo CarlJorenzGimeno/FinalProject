@@ -1,12 +1,9 @@
 package FinalProject;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.Base64;
-import java.util.Base64.Encoder;
-import java.util.Base64.Decoder;
+
 
 public class FileHandling {
     private void encodeSave(String save) throws IOException {
@@ -25,6 +22,6 @@ public class FileHandling {
 
     private void parseSave() throws IOException {
         String save = decodeSave();
-        
+
     }
 }
