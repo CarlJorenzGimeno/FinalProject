@@ -1,11 +1,17 @@
 package FinalProject;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.Base64;
 
 
 public class FileHandling {
+
+    public boolean saveExists(){
+        return new File("C:/Bread/test.sav").isFile();
+    }
     private void encodeSave(String save) throws IOException {
         Base64.Encoder enc = Base64.getEncoder();
         byte[] encoded = enc.encode(save.getBytes("UTF-8"));
@@ -20,8 +26,21 @@ public class FileHandling {
         return decoded;
     }
 
-    private void parseSave() throws IOException {
+    public ArrayList<Object> parseSave() throws IOException {
         String save = decodeSave();
+        String[] split_save = save.split(",");
+        ArrayList<Object> values = new ArrayList<>();
+        for (int i=0; i<split_save.length;i++){
+            try{
+                values.add(Integer.parseInt(split_save[i]));
+            }
+            catch (NumberFormatException e){
+                values.add(split_save[i]);
+            }
+        }
+        return values;
+    }
+    public void composeSave(){
 
     }
 }
