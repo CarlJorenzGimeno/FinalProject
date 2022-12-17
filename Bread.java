@@ -8,32 +8,31 @@ public class Bread{
     private static int bread;
     private final int breadPerClick;
 
+
     public int getBread(){return bread;}
     public String getName(){return name;}
 
     public static void setBread(int bread) {Bread.bread = bread;}
 
-    public void addBread(int cost){bread = bread+cost;}
+    public void addBread(int num){bread = bread+num;}
     public void removeBread(int cost){bread -= cost;}
     public int getBreadPerClick(){return (int) (breadPerClick*(1+Relic.getTotal_relic_click_value()));}
 
-    public JLabel getBreadLabel(){return new JLabel("<html><center>"+bread+" Bread</center></html>");}
-    public JLabel getBPCLabel(){return new JLabel("<html><center>"+breadPerClick+" bread per click.</center></html>");}
     public JPanel getPanel(BufferedImage icon){
         //Create JPanel and set layout to BoxLayout
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
 
         //Total Bread, Bread per second, and Bread per click
-        JLabel total_bread = getBreadLabel();
-        JLabel bpc = getBPCLabel();
-        JLabel bps = new JLabel("<html><center>"+Building.getTotal()+" bread per second.</center></html>");
+        JLabel total_bread = new JLabel(bread+" Bread");
+        JLabel bpc = new JLabel(breadPerClick+" bread per click");
+        JLabel bps = new JLabel(Building.getTotal()+" bread per second");
 
         //Button for clicking
         JButton button = new JButton(new ImageIcon(icon));
         //Add ActionListener
         button.addActionListener(e -> {
-            //Add Bread every click using breadperclick
+            //Add Bread every click using bread per click
             addBread(getBreadPerClick());
 
             //Update text values
