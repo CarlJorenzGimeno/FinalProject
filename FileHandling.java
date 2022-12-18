@@ -9,12 +9,16 @@ import java.util.ArrayList;
 
 public class FileHandling {
 
+    //Check if save file exists
     public boolean saveExists(){
         return new File("bread.sav").isFile();
     }
+
+    //Encode save
     public void encodeSave(ArrayList<Object> save) throws IOException, InvalidAlgorithmParameterException {
         SecureRandom secureRandom = new SecureRandom();
         File file_path = new File("bread.sav");
+        //Creates save if it doesn't exist
         file_path.createNewFile();
         try {
             //Generate key
@@ -26,13 +30,16 @@ public class FileHandling {
             secureRandom.nextBytes(iv);
             IvParameterSpec ivspec = new IvParameterSpec(iv);
 
-//            String encodedkey = Base64.getEncoder().encodeToString(k.getEncoded());
+            //Initialize cipher
             Cipher aes = Cipher.getInstance("AES/CBC/PKCS5Padding");
             aes.init(Cipher.ENCRYPT_MODE, k,ivspec);
+
+            //Initialize FileOutputStream and write the AES key and IV
             FileOutputStream fos = new FileOutputStream(file_path);
             fos.write(iv);
             fos.write(k.getEncoded());
             fos.flush();
+            //Cipher save using AES 128
             CipherOutputStream cos = new CipherOutputStream(fos, aes);
             ObjectOutputStream oos = new ObjectOutputStream(cos);
             oos.writeObject(save.size());
@@ -48,15 +55,18 @@ public class FileHandling {
     public ArrayList<Object> decodeSave() throws InvalidAlgorithmParameterException {
         ArrayList<Object> save = null;
         try {
+            //Initialize save container and cipher
             save = new ArrayList<Object>();
             Cipher aes = Cipher.getInstance("AES/CBC/PKCS5Padding");
             FileInputStream fis = new FileInputStream(new File("bread.sav"));
-//            byte[] decoded = Base64.getDecoder().decode(fis.readNBytes(24));
+            //Read key and IV
             byte[] iv = fis.readNBytes(16);
             byte[] k = fis.readNBytes(16);
             Key key = new SecretKeySpec(k, 0, k.length, "AES");
             IvParameterSpec ivspec = new IvParameterSpec(iv);
             aes.init(Cipher.DECRYPT_MODE, key,ivspec);
+
+            //Decrypt save file
             CipherInputStream cis = new CipherInputStream(fis, aes);
             ObjectInputStream ois = new ObjectInputStream(cis);
             int size = (int) ois.readObject();
@@ -69,26 +79,46 @@ public class FileHandling {
     }
 
     public ArrayList<Object> parseSave() throws IOException, InvalidAlgorithmParameterException {
+        //Obtain save
         ArrayList<Object> save = decodeSave();
+
+        //Container for parsed save and temporary one for conversion
         ArrayList<Object> temp = new ArrayList<Object>();
-        temp.add(save.get(0));
-        temp.add(save.get(1));
+        ArrayList<Object> temp1 = (ArrayList<Object>) save.get(0);
+        ArrayList<Integer> upgrades = new ArrayList<Integer>();
+        ArrayList<Boolean> perm = new ArrayList<Boolean>();
+
+        //Convert ArrayList<Object> to its appropriate data type
+        for(Object o:temp1){
+            upgrades.add((Integer) o);
+        }
+        temp1 = (ArrayList<Object>) save.get(1);
+        for(Object o:temp1){
+            perm.add((Boolean) o);
+        }
+
+        //Add to temp ArrayList and return
+        temp.add(upgrades);
+        temp.add(perm);
         return temp;
     }
     public ArrayList<Relic> parseRelics() throws InvalidAlgorithmParameterException {
         ArrayList<Object> save = decodeSave();
         ArrayList<Relic> relics = new ArrayList<Relic>();
+        //Add relics to game
         for(int i = 2; i < save.size(); i++){
             relics.add((Relic) save.get(i));
         }
         return relics;
     }
     public void composeSave(ArrayList<Building> buildings, ArrayList<Relic> relics) throws IOException, InvalidAlgorithmParameterException {
+        //Compile all necessary data to an ArrayList and encode it.
         Bread bread = new Bread("dummy",0);
         ArrayList<Object> save = new ArrayList<Object>();
         ArrayList<Integer> upgrades = new ArrayList<Integer>();
         ArrayList<Boolean> perm = new ArrayList<Boolean>();
         upgrades.add(bread.getBread());
+        //Only these two attributes are required to restore all progress
         for (Building building:buildings){
             upgrades.add(building.getNoOfBuildings());
             perm.add(building.getUpgraded());

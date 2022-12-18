@@ -1,11 +1,13 @@
 package FinalProject;
 
+import java.io.Serializable;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Relic {
+public class Relic implements Serializable {
+    private static final long serialVersionUID =1L;
     private String relic_name;
     private double relic_bps_value;
     private double relic_click_value;

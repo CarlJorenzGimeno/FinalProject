@@ -21,11 +21,11 @@ public class GUI extends JFrame {
     public static int menu=0;
     FileHandling fh = new FileHandling();
     private final Bread pandesal = new Bread("Pandesal",1);
-    private final Bread monay = new Bread("Monay", 1);
-    private Bread mamon = new Bread ("Mamon", 2);
-    private Bread ensaymada = new Bread("Ensaymada", 3);
-    private Bread pandecoco = new Bread("Pan de Coco", 4);
-    private Bread hopia = new Bread ("Hopia", 5);
+    private final Bread monay = new Bread("Monay", 2);
+    private Bread mamon = new Bread ("Mamon", 3);
+    private Bread ensaymada = new Bread("Ensaymada", 4);
+    private Bread pandecoco = new Bread("Pan de Coco", 5);
+    private Bread hopia = new Bread ("Hopia", 6);
     Building clicker = new Building("Clicker",10,1,0,"Rapid Tap");
     Building baker = new Building("Baker",100,5,0,"Metal Rolling Pin");
     Building kitchen = new Building("Kitchen",1000,25,0,"Convection Oven");
@@ -39,7 +39,7 @@ public class GUI extends JFrame {
 
 
     private void restoreProgress() throws IOException, InvalidAlgorithmParameterException {
-        //Initialize buildings
+        //Initialize buildings array
         buildings.add(clicker);
         buildings.add(baker);
         buildings.add(kitchen);
@@ -47,28 +47,43 @@ public class GUI extends JFrame {
         buildings.add(street);
         buildings.add(town);
         buildings.add(city);
+
+        //Check if save exists
         if (fh.saveExists()){
-            ArrayList<Object> save = fh.parseSave();
-            ArrayList<Integer> upgrades = (ArrayList<Integer>) save.get(0);
-            ArrayList<Boolean> perm = (ArrayList<Boolean>) save.get(1);
-            Bread.setBread(upgrades.get(0));
-            for (int i = 0; i < 7;i++){
-                buildings.get(i).setNoOfBuildings(upgrades.get(i+1));
-                buildings.get(i).setUpgraded(perm.get(i));
+            try {
+                //Parse save and restore progress
+                ArrayList<Object> save = fh.parseSave();
+                ArrayList<Integer> upgrades = (ArrayList<Integer>) save.get(0);
+                ArrayList<Boolean> perm = (ArrayList<Boolean>) save.get(1);
+                Bread.setBread(upgrades.get(0));
+                for (int i = 0; i < 7; i++) {
+                    buildings.get(i).setNoOfBuildings(upgrades.get(i + 1));
+                    buildings.get(i).setUpgraded(perm.get(i));
+                }
+                relics = fh.parseRelics();
             }
-            relics = fh.parseRelics();
+            catch(ClassCastException e){
+                e.printStackTrace();
+            }
         }
     }
 
+    //Updates JPanel cleanly
     public void updatePanel(JPanel panel){
         panel.revalidate();
         panel.repaint();
     }
 
+    //
     public void changeMenu(JPanel panel, Bread bread) throws IOException {
         //Buffer image
         BufferedImage breadImage = ImageIO.read(Objects.requireNonNull(GUI.class.getResource("pan.png")));;
         JPanel picture = bread.getPanel(breadImage);
+
+        //JPanel with box Layout. Group upgrades together vertically
+        JPanel group = new JPanel();
+        group.setLayout(new BoxLayout(group, BoxLayout.Y_AXIS));
+        group.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 
         //Bread clicking menu
         if (menu == 0) {
@@ -76,27 +91,38 @@ public class GUI extends JFrame {
             panel.add(picture);
             panel.add(new JLabel(bread.getName()));
         }
+
         //Upgrades menu
         else if(menu == 1) {
             panel.removeAll();
-            panel.add(new JLabel(bread.getBread()+" Bread"));
+            group.removeAll();
+            group.add(new JLabel(bread.getBread()+" Bread"));
             for (Building building : buildings) {
-                panel.add(building.upgradePanel());
+                group.add(building.upgradePanel());
             }
+            panel.add(group);
         }
+
+        //Permanent Upgrades Menu
         else if (menu == 2) {
             panel.removeAll();
-            panel.add(new JLabel(bread.getBread()+" Bread"));
+            group.removeAll();
+            group.add(new JLabel(bread.getBread()+" Bread"));
             for (Building building : buildings) {
-                panel.add(building.permUpgradePanel());
+                group.add(building.permUpgradePanel());
             }
+            panel.add(group);
         }
+
+        //Relics Menu
         else if (menu == 3) {
             panel.removeAll();
+            //Show placeholder text when relics list is empty
             if (relics.size() == 0){
                 panel.add(new JLabel("<html><center>No Relics Yet.</center></html>"));
             }
             else{
+                //Show Relic and their corresponding
                 JPanel relicSlot = new JPanel(new FlowLayout());
                 for(Relic relic: relics){
                     relicSlot.add(new JLabel(relic.getRelic_name()));
@@ -106,11 +132,12 @@ public class GUI extends JFrame {
                 panel.add(relicSlot);
             }
         }
-//        updatePanel(panel);
+        updatePanel(panel);
     }
 
 
     public void createWindow(Bread bread) throws IOException {
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
         //GUI window Properties
         setTitle("PanDeSal");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -123,17 +150,21 @@ public class GUI extends JFrame {
         JMenuItem save = new JMenuItem("Save");
         JMenuItem respec = new JMenuItem("Respec");
         JMenuItem reset = new JMenuItem("Reset");
+        JMenuItem exit = new JMenuItem("Exit");
         option.add(save);
         option.add(respec);
         option.add(reset);
+        option.add(exit);
 
-        JMenu m2 = new JMenu("Help");
+        JMenu help = new JMenu("Help");
+        JMenuItem help1 = new JMenuItem("Help");
+        help.add(help1);
         mb.add(option);
-        mb.add(m2);
+        mb.add(help);
 
         //Create main panel to house the changing menu elements
         JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel,BoxLayout.Y_AXIS));
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 
         //Creating the panel at bottom and adding components
@@ -157,26 +188,50 @@ public class GUI extends JFrame {
                 //Respec
                 //Restart with a randomly generated relic.
                 else if(source == respec){
-                    Relic new_relic = Relic.createRelic(buildings);
-                    if (new_relic != null){
-                        relics.add(new_relic);
-                        Bread.setBread(0);
-                        for(Building building:buildings){building.setNoOfBuildings(0);}
+                    int choice = JOptionPane.showConfirmDialog(null,"Are you sure you wanna reset your progress for a new relic?","Respec",JOptionPane.WARNING_MESSAGE);
+                    if (choice == JOptionPane.YES_OPTION) {
+                        Relic new_relic = Relic.createRelic(buildings);
+                        if (new_relic != null) {
+                            relics.add(new_relic);
+                            Bread.setBread(0);
+                            for (Building building : buildings) {
+                                building.setNoOfBuildings(0);
+                            }
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Insufficient progress.");
+                        }
                     }
-                    else{
-                        JOptionPane.showMessageDialog(null,"Insufficient progress.");
-                    }
+                    else{JOptionPane.showMessageDialog(null,"Cancelled","Cancelled",JOptionPane.WARNING_MESSAGE);}
                 }
                 //Reset progress
                 else if(source == reset){
-                    int choice = JOptionPane.showConfirmDialog(null,"This will reset all your progress until now.\nAre you sure you want to reset your progress.\nTHIS PROCESS CANNOT BE UNDONE.","Confirm Reset",JOptionPane.YES_NO_OPTION);
+                    int choice = JOptionPane.showConfirmDialog(null,"This will reset all your progress until now.\nAre you sure you want to reset your progress?\n\nTHIS PROCESS CANNOT BE UNDONE.","Confirm Reset",JOptionPane.YES_NO_OPTION);
                     if (choice == JOptionPane.YES_OPTION){
                         Bread.setBread(0);
                         for(Building building:buildings){building.setNoOfBuildings(0);}
                     }
                     else{
-                        JOptionPane.showMessageDialog(null,"Cancelled");
+                        JOptionPane.showMessageDialog(null,"Cancelled","Cancelled",JOptionPane.WARNING_MESSAGE);
+                    }}
+                //Save before exit
+                else if(source == exit){
+                    int choice = JOptionPane.showConfirmDialog(null,"Are you sure you want to quit?","Confirm Exit",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
+                    if (choice == JOptionPane.YES_OPTION){
+                        try {
+                            fh.composeSave(buildings,relics);
+                            System.exit(0);
+                        } catch (IOException | InvalidAlgorithmParameterException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
+                    else{
+                        JOptionPane.showMessageDialog(null,"Cancelled","Cancelled",JOptionPane.WARNING_MESSAGE);
+                    }
+                }
+                //Show help menu
+                else if (source == help1){
+                    String message = "How to play\nClick, upgrade, click more, upgrade more.\n\nWhat does Respec do?\nRespec resets your playthrough but gives you relics to compensate.<br>These relics carry over when using respec.";
+                    JOptionPane.showMessageDialog(null,message,"Help",JOptionPane.INFORMATION_MESSAGE);
                 }
 
                 //Change main panel based on chosen option
@@ -190,6 +245,8 @@ public class GUI extends JFrame {
         save.addActionListener(actionListener);
         respec.addActionListener(actionListener);
         reset.addActionListener(actionListener);
+        exit.addActionListener(actionListener);
+        help1.addActionListener(actionListener);
 
         bmenu_home.addActionListener(actionListener);
         bmenu_upgrades.addActionListener(actionListener);
@@ -197,7 +254,43 @@ public class GUI extends JFrame {
         bmenu_relic.addActionListener(actionListener);
 
         changeMenu(mainPanel, bread);
+        mainPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         updatePanel(mainPanel);
+
+        //Update main panel every 100 milliseconds
+        Runnable ui = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    changeMenu(mainPanel, bread);
+                    updatePanel(mainPanel);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+        executor.scheduleWithFixedDelay(ui,0,100,TimeUnit.MILLISECONDS);
+
+        //Add bread per second
+        Runnable bps = new Runnable() {
+            @Override
+            public void run() {bread.addBread(Building.getTotal());
+            }
+        };
+        executor.scheduleWithFixedDelay(bps,0,1,TimeUnit.SECONDS);
+
+        //Auto save every two minutes
+        Runnable auto_save = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    fh.composeSave(buildings,relics);
+                } catch (IOException | InvalidAlgorithmParameterException e) {
+                    throw new RuntimeException(e);
+                };
+            }
+        };
+        executor.scheduleWithFixedDelay(auto_save,0,2,TimeUnit.MINUTES);
 
         // Components Added using Flow Layout
         bottomPanel.add(bmenu_home);
@@ -217,33 +310,12 @@ public class GUI extends JFrame {
         //Instantiate gui to initialize arraylists
         //Arraylists cannot be modified with a static method
         GUI gui = new GUI();
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
         //Set current bread type
-        Bread current_bread = gui.pandesal;
-        //Initialize ArrayLists
+        Bread current_bread = new Bread(gui.pandesal.getName(),gui.pandesal.getBreadPerClick());
+        //Restore progress
         gui.restoreProgress();
-
-
-        //Refresh GUI every 100ms
-        Runnable ui = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    gui.createWindow(current_bread);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
-        executor.scheduleWithFixedDelay(ui,0,100,TimeUnit.MILLISECONDS);
-//        gui.createWindow(current_bread);
-        //Add bread per second
-        Runnable bps = new Runnable() {
-            @Override
-            public void run() {current_bread.addBread(Building.getTotal());
-            }
-        };
-        executor.scheduleWithFixedDelay(bps,0,1,TimeUnit.SECONDS);
+        //Show window
+        gui.createWindow(current_bread);
     }
 
 }
