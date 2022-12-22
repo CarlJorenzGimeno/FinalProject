@@ -3,13 +3,13 @@ package FinalProject;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.Serializable;
+
 
 public class Building{
-    Bread bread = new Bread("",0);
+    Bread bread = new Bread(0);
     private final String name;
     private final int initial_cost;
-    private String permUpgrade;
+    private final String permUpgrade;
     private Boolean isUpgraded = false;
     private int noOfBuildings;
     private final int output;
@@ -31,10 +31,7 @@ public class Building{
     public void setUpgraded(Boolean upgraded) {
         isUpgraded = upgraded;
     }
-
-    public Boolean getUpgraded() {
-        return isUpgraded;
-    }
+    public Boolean getUpgraded() {return isUpgraded;}
 
     public void addBuilding(int num){
         noOfBuildings += num;
@@ -42,7 +39,6 @@ public class Building{
     }
 
     public static int getTotal(){return total_output;}
-
     public int getOutput() {return output*noOfBuildings;}
     public String getName(){return name;}
     public String getPermUpgrade(){return permUpgrade;}
@@ -67,7 +63,7 @@ public class Building{
         JLabel label = new JLabel("<html><center>"+getName()+"</center></html>");
         JButton upgrade = getUpgrade();
         upgrade.addActionListener (e -> {
-            Boolean isBuySuccess = buyUpgrade();
+            boolean isBuySuccess = buyUpgrade();
             if (!isBuySuccess){JOptionPane.showMessageDialog(null, "Insufficient Bread.");}
             upgrade.setText("<html><center>Upgrade<br>"+getCost()+"$</center></html>");
             panel.revalidate();

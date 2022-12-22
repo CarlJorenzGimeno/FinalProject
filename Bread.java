@@ -4,19 +4,23 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 
 public class Bread{
-    private final String name;
+    private final String[] names = {"Pandesal","Monay","Mamon","Ensaymada","Pan de Coco","hopia"};
     private static int bread;
-    private final int breadPerClick;
+    private static int breadType;
 
 
     public int getBread(){return bread;}
-    public String getName(){return name;}
+    public String getName(){return names[breadType];}
+    public static void setBread(int bread) {
+        Bread.bread = bread;
+        updateBreadType();
+    }
+    //Update Breadtype depending on the no of bread
+    private static void updateBreadType(){breadType = Math.toIntExact((long) Math.floor(Math.log(bread) / Math.log(1000)));}
 
-    public static void setBread(int bread) {Bread.bread = bread;}
-
-    public void addBread(int num){bread = bread+num;}
-    public void removeBread(int cost){bread -= cost;}
-    public int getBreadPerClick(){return (int) (breadPerClick*(1+Relic.getTotal_relic_click_value()));}
+    public void addBread(int num){bread += num; updateBreadType();}
+    public void removeBread(int cost){bread -= cost; updateBreadType();}
+    public int getBreadPerClick(){return (int) ((breadType+1)*(1+Relic.getTotal_relic_click_value()));}
 
     public JPanel getPanel(BufferedImage icon){
         //Create JPanel and set layout to BoxLayout
@@ -24,8 +28,9 @@ public class Bread{
         panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
 
         //Total Bread, Bread per second, and Bread per click
+        JLabel current = new JLabel("Bread: " + names[breadType]);
         JLabel total_bread = new JLabel(bread+" Bread");
-        JLabel bpc = new JLabel(breadPerClick+" bread per click");
+        JLabel bpc = new JLabel((breadType+1)+" bread per click");
         JLabel bps = new JLabel(Building.getTotal()+" bread per second");
 
         //Button for clicking
@@ -34,10 +39,11 @@ public class Bread{
         button.addActionListener(e -> {
             //Add Bread every click using bread per click
             addBread(getBreadPerClick());
+            updateBreadType();
 
             //Update text values
             total_bread.setText("<html><center>"+bread+" Bread</center></html>");
-            bpc.setText("<html><center>"+breadPerClick+" bread per click.</center></html>");
+            bpc.setText("<html><center>"+(breadType+1)+" bread per click.</center></html>");
             bps.setText("<html><center>"+Building.getTotal()+" bread per second.</center></html>");
 
             //Update panel
@@ -45,6 +51,7 @@ public class Bread{
             panel.repaint();
         });
         //Add components
+        panel.add(current);
         panel.add(total_bread);
         panel.add(bpc);
         panel.add(bps);
@@ -52,8 +59,7 @@ public class Bread{
         return panel;
     }
 
-    public Bread(String name, int breadPerClick){
-        this.name = name;
-        this.breadPerClick = breadPerClick;
+    public Bread(int breadType){
+        Bread.breadType = breadType;
     }
 }

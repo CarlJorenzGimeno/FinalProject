@@ -1,5 +1,6 @@
 package FinalProject;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -7,10 +8,11 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Relic implements Serializable {
+    @Serial
     private static final long serialVersionUID =1L;
-    private String relic_name;
-    private double relic_bps_value;
-    private double relic_click_value;
+    private final String relic_name;
+    private final double relic_bps_value;
+    private final double relic_click_value;
     private static double total_relic_bps_value;
     private static double total_relic_click_value;
     private static int noOfRelics;
@@ -54,7 +56,7 @@ public class Relic implements Serializable {
             relic = new Relic("Relic #" + noOfRelics + 1, rand.nextDouble(weightedScore), rand.nextDouble(weightedScore));
         }
         //Added so throwing IllegalArgumentException isnt necessary on the GUI class.
-        catch(IllegalArgumentException e){}
+        catch(IllegalArgumentException ignored){}
         return relic;
     }
 

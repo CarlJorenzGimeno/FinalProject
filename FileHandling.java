@@ -19,7 +19,8 @@ public class FileHandling {
         SecureRandom secureRandom = new SecureRandom();
         File file_path = new File("bread.sav");
         //Creates save if it doesn't exist
-        file_path.createNewFile();
+        boolean fileCreated = file_path.createNewFile();
+        if (fileCreated){System.out.println("Save not found. Creating...");}
         try {
             //Generate key
             KeyGenerator keygen = KeyGenerator.getInstance("AES");
@@ -53,12 +54,12 @@ public class FileHandling {
     }
 
     public ArrayList<Object> decodeSave() throws InvalidAlgorithmParameterException {
-        ArrayList<Object> save = null;
+        ArrayList<Object> save;
         try {
             //Initialize save container and cipher
-            save = new ArrayList<Object>();
+            save = new ArrayList<>();
             Cipher aes = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            FileInputStream fis = new FileInputStream(new File("bread.sav"));
+            FileInputStream fis = new FileInputStream("bread.sav");
             //Read key and IV
             byte[] iv = fis.readNBytes(16);
             byte[] k = fis.readNBytes(16);
@@ -73,20 +74,20 @@ public class FileHandling {
             for (int i = 0; i < size; i++) save.add(ois.readObject());
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IOException |
                  ClassNotFoundException e) {
-            e.printStackTrace();
+            throw new RuntimeException();
         }
         return save;
     }
 
-    public ArrayList<Object> parseSave() throws IOException, InvalidAlgorithmParameterException {
+    public ArrayList<Object> parseSave() throws InvalidAlgorithmParameterException {
         //Obtain save
         ArrayList<Object> save = decodeSave();
 
         //Container for parsed save and temporary one for conversion
-        ArrayList<Object> temp = new ArrayList<Object>();
+        ArrayList<Object> temp = new ArrayList<>();
         ArrayList<Object> temp1 = (ArrayList<Object>) save.get(0);
-        ArrayList<Integer> upgrades = new ArrayList<Integer>();
-        ArrayList<Boolean> perm = new ArrayList<Boolean>();
+        ArrayList<Integer> upgrades = new ArrayList<>();
+        ArrayList<Boolean> perm = new ArrayList<>();
 
         //Convert ArrayList<Object> to its appropriate data type
         for(Object o:temp1){
@@ -104,7 +105,7 @@ public class FileHandling {
     }
     public ArrayList<Relic> parseRelics() throws InvalidAlgorithmParameterException {
         ArrayList<Object> save = decodeSave();
-        ArrayList<Relic> relics = new ArrayList<Relic>();
+        ArrayList<Relic> relics = new ArrayList<>();
         //Add relics to game
         for(int i = 2; i < save.size(); i++){
             relics.add((Relic) save.get(i));
@@ -113,10 +114,10 @@ public class FileHandling {
     }
     public void composeSave(ArrayList<Building> buildings, ArrayList<Relic> relics) throws IOException, InvalidAlgorithmParameterException {
         //Compile all necessary data to an ArrayList and encode it.
-        Bread bread = new Bread("dummy",0);
-        ArrayList<Object> save = new ArrayList<Object>();
-        ArrayList<Integer> upgrades = new ArrayList<Integer>();
-        ArrayList<Boolean> perm = new ArrayList<Boolean>();
+        Bread bread = new Bread(0);
+        ArrayList<Object> save = new ArrayList<>();
+        ArrayList<Integer> upgrades = new ArrayList<>();
+        ArrayList<Boolean> perm = new ArrayList<>();
         upgrades.add(bread.getBread());
         //Only these two attributes are required to restore all progress
         for (Building building:buildings){
