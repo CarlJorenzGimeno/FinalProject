@@ -52,6 +52,11 @@ public class GUI extends JFrame {
                     buildings.get(i).setUpgraded(perm.get(i));
                 }
                 relics = fh.parseRelics();
+                for(Relic relic : relics){
+                    Relic.setTotal_relic_bps_value(Relic.getTotal_relic_bps_value()+relic.getRelic_bps_value());
+                    Relic.setTotal_relic_click_value(Relic.getTotal_relic_click_value()+relic.getRelic_click_value());
+                    Relic.setNoOfRelics(Relic.getNoOfRelics()+1);
+                }
             }
             catch(ClassCastException e){
                 throw new ClassCastException();
@@ -114,13 +119,15 @@ public class GUI extends JFrame {
             }
             else{
                 //Show Relic and their corresponding values
-                JPanel relicSlot = new JPanel(new FlowLayout());
+                JPanel relicMenu = new JPanel(new FlowLayout());
                 for(Relic relic: relics){
+                    JPanel relicSlot = new JPanel(new FlowLayout());
                     relicSlot.add(new JLabel(relic.getRelic_name()));
-                    relicSlot.add(new JLabel("+"+relic.getRelic_bps_value()+"% Bread Per Second"));
-                    relicSlot.add(new JLabel("+"+relic.getRelic_click_value()+"% Bread Per Click"));
+                    relicSlot.add(new JLabel("+"+relic.getRelic_bps_value()*100+"% Bread Per Second"));
+                    relicSlot.add(new JLabel("+"+relic.getRelic_click_value()*100+"% Bread Per Click"));
+                    relicMenu.add(relicSlot);
                 }
-                panel.add(relicSlot);
+                panel.add(relicMenu);
             }
         }
         updatePanel(panel);
@@ -150,8 +157,24 @@ public class GUI extends JFrame {
         JMenu help = new JMenu("Help");
         JMenuItem help1 = new JMenuItem("Help");
         help.add(help1);
+
+        JMenu cheats = new JMenu("Cheats");
+        JMenuItem addbread = new JMenuItem("Add 500M Bread");
+        JMenuItem buyall = new JMenuItem("Buy all perm. upgrades");
+        JMenuItem addrelic = new JMenuItem("Create a good relic");
+        addbread.addActionListener(e -> bread.addBread(500_000_000));
+        buyall.addActionListener(e -> {for(Building building:buildings){ building.setUpgraded(true);}});
+        addrelic.addActionListener(e -> {
+            Relic relic = new Relic("Cheat Relic",50,50);
+            relics.add(relic);
+        });
+        cheats.add(addbread);
+        cheats.add(buyall);
+        cheats.add(addrelic);
+
         mb.add(option);
         mb.add(help);
+        mb.add(cheats);
 
         //Create main panel to house the changing menu elements
         JPanel mainPanel = new JPanel();
@@ -199,11 +222,15 @@ public class GUI extends JFrame {
                 int choice = JOptionPane.showConfirmDialog(null,"This will reset all your progress until now.\nAre you sure you want to reset your progress?\n\nTHIS PROCESS CANNOT BE UNDONE.","Confirm Reset",JOptionPane.YES_NO_OPTION);
                 if (choice == JOptionPane.YES_OPTION){
                     Bread.setBread(0);
-                    for(Building building:buildings){building.setNoOfBuildings(0);}
+                    for (Building building : buildings) {
+                        building.setNoOfBuildings(0);
+                        building.setTotal_output(0);
+                        building.setUpgraded(false);
+                    }
+                    Relic.flushRelic();
+                    relics.clear();
                 }
-                else{
-                    JOptionPane.showMessageDialog(null,"Cancelled","Cancelled",JOptionPane.WARNING_MESSAGE);
-                }}
+            }
             //Save before exit
             else if(source == exit){
                 int choice = JOptionPane.showConfirmDialog(null,"Are you sure you want to quit?","Confirm Exit",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);

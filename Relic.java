@@ -29,13 +29,17 @@ public class Relic implements Serializable {
         return relic_click_value;
     }
 
+    public static void setTotal_relic_bps_value(double bps_value){total_relic_bps_value = bps_value;}
     public static double getTotal_relic_bps_value() {
         return total_relic_bps_value;
     }
-
+    public static void setTotal_relic_click_value(double click_value){total_relic_click_value = click_value;}
     public static double getTotal_relic_click_value() {
         return total_relic_click_value;
     }
+    public static void setNoOfRelics(int num){noOfRelics = num;}
+
+    public static int getNoOfRelics() {return noOfRelics;}
 
     public static Relic createRelic(ArrayList<Building> buildings){
         Random rand = new Random();
@@ -58,6 +62,11 @@ public class Relic implements Serializable {
         //Added so throwing IllegalArgumentException isnt necessary on the GUI class.
         catch(IllegalArgumentException ignored){}
         return relic;
+    }
+    public static void flushRelic(){
+        noOfRelics = 0;
+        total_relic_click_value = 0;
+        total_relic_bps_value = 0;
     }
 
     public Relic(String name, double bps_value, double click_value){
