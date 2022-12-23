@@ -29,7 +29,7 @@ public class GUI extends JFrame {
     static ArrayList<Relic> relics = new ArrayList<>();
 
 
-    private void restoreProgress() throws InvalidAlgorithmParameterException {
+    private void restoreProgress() throws InvalidAlgorithmParameterException, ClassCastException {
         //Initialize buildings array
         buildings.add(clicker);
         buildings.add(baker);
@@ -54,7 +54,7 @@ public class GUI extends JFrame {
                 relics = fh.parseRelics();
             }
             catch(ClassCastException e){
-                e.printStackTrace();
+                throw new ClassCastException();
             }
         }
     }
@@ -181,10 +181,12 @@ public class GUI extends JFrame {
                 if (choice == JOptionPane.YES_OPTION) {
                     Relic new_relic = Relic.createRelic(buildings);
                     if (new_relic != null) {
+                        //Reset progress and create new relic
                         relics.add(new_relic);
                         Bread.setBread(0);
                         for (Building building : buildings) {
                             building.setNoOfBuildings(0);
+                            building.setUpgraded(false);
                         }
                     } else {
                         JOptionPane.showMessageDialog(null, "Insufficient progress.");
@@ -207,6 +209,7 @@ public class GUI extends JFrame {
                 int choice = JOptionPane.showConfirmDialog(null,"Are you sure you want to quit?","Confirm Exit",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
                 if (choice == JOptionPane.YES_OPTION){
                     try {
+                        //Create save
                         fh.composeSave(buildings,relics);
                         System.exit(0);
                     } catch (IOException | InvalidAlgorithmParameterException ex) {
@@ -219,7 +222,7 @@ public class GUI extends JFrame {
             }
             //Show help menu
             else if (source == help1){
-                String message = "How to play\nClick, upgrade, click more, upgrade more.\n\nWhat does Respec do?\nRespec resets your playthrough but gives you relics to compensate.<br>These relics carry over when using respec.";
+                String message = "How to play\nClick, upgrade, click more, upgrade more.\n\nWhat does Respec do?\nRespec resets your playthrough but gives you relics to compensate.\nThese relics carry over when using respec.";
                 JOptionPane.showMessageDialog(null,message,"Help",JOptionPane.INFORMATION_MESSAGE);
             }
 

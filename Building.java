@@ -16,8 +16,8 @@ public class Building{
     private static int total_output;
 
     public int getCost() {
-        //Formula for cost: P*(1+R)^N*(1+R2)
-        return (int) (initial_cost*Math.pow(1.1,noOfBuildings)*(1+Relic.getTotal_relic_bps_value()));
+        //Formula for cost: P*(1+R)^N
+        return (int) (initial_cost*Math.pow(1.1,noOfBuildings));
     }
 
     public int getNoOfBuildings() {
@@ -33,16 +33,19 @@ public class Building{
     }
     public Boolean getUpgraded() {return isUpgraded;}
 
+    //Adds building
     public void addBuilding(int num){
         noOfBuildings += num;
         total_output += output*num;
     }
 
     public static int getTotal(){return total_output;}
-    public int getOutput() {return output*noOfBuildings;}
+
+    //Output depending on no of buildings and relics
+    public int getOutput() {return (int) (output*noOfBuildings*(1+Relic.getTotal_relic_bps_value()));}
     public String getName(){return name;}
-    public String getPermUpgrade(){return permUpgrade;}
     public JButton getUpgrade(){return new JButton("<html><center>Upgrade<br>"+getCost()+"$</center></html>");}
+    //Checks if user have enough bread to buy upgrade
     public boolean buyUpgrade(){
         if(bread.getBread()>=getCost()){
             bread.removeBread(getCost());
@@ -51,6 +54,7 @@ public class Building{
         }
         else{return false;}
     }
+    //Buy perm upgrade
     public boolean buyPermUpgrade(){
         if(bread.getBread() >= initial_cost*120){
             bread.removeBread(initial_cost*120);
@@ -58,6 +62,7 @@ public class Building{
         }
         return isUpgraded;
     }
+    //Menu to show to the GUI
     public JPanel upgradePanel(){
         JPanel panel = new JPanel(new FlowLayout());
         JLabel label = new JLabel("<html><center>"+getName()+"</center></html>");
@@ -76,6 +81,7 @@ public class Building{
         return panel;
     }
 
+    //Permanent upgrade menu
     public JPanel permUpgradePanel(){
         JPanel panel = new JPanel(new FlowLayout());
         JLabel label = new JLabel("<html><center>"+permUpgrade+"</center></html>");

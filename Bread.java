@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 
 public class Bread{
-    private final String[] names = {"Pandesal","Monay","Mamon","Ensaymada","Pan de Coco","hopia"};
+    private final String[] names = {"Pandesal","Monay","Mamon","Ensaymada","Pan de Coco","Hopia"};
     private static int bread;
     private static int breadType;
 
@@ -16,7 +16,12 @@ public class Bread{
         updateBreadType();
     }
     //Update Breadtype depending on the no of bread
-    private static void updateBreadType(){breadType = Math.toIntExact((long) Math.floor(Math.log(bread) / Math.log(1000)));}
+    private static void updateBreadType(){
+        double temp = Math.log(bread) / Math.log(1000);
+        if (Double.isFinite(temp)){
+            breadType = Math.min((int) temp, 5);
+        }
+    }
 
     public void addBread(int num){bread += num; updateBreadType();}
     public void removeBread(int cost){bread -= cost; updateBreadType();}
